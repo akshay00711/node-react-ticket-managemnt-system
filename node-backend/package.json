@@ -1,0 +1,29 @@
+{
+  "name": "ticketing-system-node-api",
+  "version": "1.0.0",
+  "description": "MVC Node.js API for a customer ticketing system with configurable mock/database data sources.",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "check": "node scripts/check-syntax.js"
+  },
+  "keywords": [
+    "ticketing",
+    "mvc",
+    "express",
+    "nodejs"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
