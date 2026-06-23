@@ -1,3 +1,4 @@
+const MongooseTicketAdapter = require("./mongooseTicket.adapter");
 const validateAdapter = require("../adapterValidator");
 const NoSqlJsonFileTicketAdapter = require("./noSqlJsonFileTicket.adapter");
 
@@ -8,8 +9,14 @@ function createNoSqlAdapter(config) {
     return adapter;
   }
 
+  if (config.dbClient === "mongoose") {
+    const adapter = new MongooseTicketAdapter(config);
+    validateAdapter(adapter);
+    return adapter;
+  }
+
   throw new Error(
-    `Unsupported NoSQL DB_CLIENT "${config.dbClient}". Set DB_ADAPTER_PATH for a custom NoSQL adapter.`
+    `Unsupported NoSQL DB_CLIENT "${config.dbClient}". Use "json-file", "mongoose", or set DB_ADAPTER_PATH.`
   );
 }
 

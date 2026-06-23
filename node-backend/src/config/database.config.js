@@ -12,6 +12,8 @@ const databaseConfig = {
   sql: {
     tableName: process.env.SQL_TICKETS_TABLE || "tickets",
     connectionString: process.env.SQL_CONNECTION_STRING || "",
+    dialect: (process.env.SQL_DIALECT || "sqlite").toLowerCase(),
+    sqliteStorage: path.resolve(process.cwd(), process.env.SQLITE_STORAGE || "./data/tickets.sqlite"),
   },
   nosql: {
     collectionName: process.env.NOSQL_TICKETS_COLLECTION || "tickets",

@@ -8,7 +8,9 @@ This project can run with mock data, a SQL-style database flow, or a NoSQL-style
 | ---- | ----------- | ------------- | -------- | --------------- |
 | Mock | `DATA_SOURCE=mock` | In-memory mock array | Fast local testing | No real database needed |
 | NoSQL local | `DATA_SOURCE=database`, `DB_FLOW=nosql`, `DB_CLIENT=json-file` | Document collection in JSON | Local NoSQL-style testing | MongoDB-like document shape |
+| MongoDB ODM | `DATA_SOURCE=database`, `DB_FLOW=nosql`, `DB_CLIENT=mongoose` | MongoDB documents via Mongoose | Real MongoDB usage | MongoDB |
 | SQL local | `DATA_SOURCE=database`, `DB_FLOW=sql`, `DB_CLIENT=sql-json-file` | Table rows in JSON | Local SQL-style testing | SQL row/table shape |
+| SQL ORM | `DATA_SOURCE=database`, `DB_FLOW=sql`, `DB_CLIENT=sequelize` | SQL tables via Sequelize | Real SQL usage | SQLite, Postgres, MySQL, etc. |
 | Real NoSQL | `DATA_SOURCE=database`, `DB_FLOW=nosql`, `DB_ADAPTER_PATH=...` | Custom adapter | MongoDB, DynamoDB, CouchDB, etc. | Any adapter with the repository methods |
 | Real SQL | `DATA_SOURCE=database`, `DB_FLOW=sql`, `DB_ADAPTER_PATH=...` | Custom adapter | Postgres, MySQL, SQL Server, SQLite, etc. | Any adapter with the repository methods |
 
@@ -123,6 +125,27 @@ src/database/sqlflow/sqlJsonFileTicket.adapter.js
 
 ## Connect A Real NoSQL Database
 
+The built-in MongoDB option uses Mongoose ODM:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=nosql
+DB_CLIENT=mongoose
+NOSQL_CONNECTION_STRING=mongodb://localhost:27017
+NOSQL_DATABASE_NAME=ticketing
+NOSQL_TICKETS_COLLECTION=tickets
+```
+
+Code location:
+
+```text
+src/database/nosqlflow/mongooseTicket.adapter.js
+```
+
+Mongoose is an ODM, not a plain MongoDB driver. It maps tickets to a schema/model and validates document fields.
+
+## Connect A Custom NoSQL Database
+
 Create a new adapter in:
 
 ```text
@@ -153,6 +176,38 @@ src/database/nosqlflow/customNoSqlTicket.adapter.example.js
 ```
 
 ## Connect A Real SQL Database
+
+The built-in SQL ORM option uses Sequelize. For local SQLite:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=sqlite
+SQLITE_STORAGE=./data/tickets.sqlite
+SQL_TICKETS_TABLE=tickets
+```
+
+For Postgres:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=postgres
+SQL_CONNECTION_STRING=postgres://user:password@localhost:5432/ticketing
+SQL_TICKETS_TABLE=tickets
+```
+
+Code location:
+
+```text
+src/database/sqlflow/sequelizeTicket.adapter.js
+```
+
+Sequelize is an ORM. It maps tickets to a SQL model/table and provides model methods instead of raw SQL in services.
+
+## Connect A Custom SQL Database
 
 Create a new adapter in:
 

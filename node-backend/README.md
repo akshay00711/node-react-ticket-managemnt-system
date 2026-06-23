@@ -1,96 +1,155 @@
-# Node.js Ticketing API
+# Node Backend - Customer Ticketing API
 
-An Express MVC API for creating, updating, deleting, listing, and viewing customer support tickets.
+This folder contains the Node.js backend for the customer ticketing system. It exposes REST APIs to create, view, update, filter, and delete tickets.
 
-## Features
+The backend follows MVC architecture and keeps the database layer configurable, so the same API can run with mock data, SQL-style storage, or NoSQL-style storage.
 
-- Full ticket CRUD API at `/api/tickets`
-- MVC structure with controllers, services, models, routes, repositories, and middleware
-- `mock` mode with isolated seed data in `src/mocks/tickets.mock.js`
-- `database` mode behind a repository/adapter interface
-- Separate `sqlflow` and `nosqlflow` folders for database-specific code
-- Built-in SQL-shaped and NoSQL-shaped JSON-file adapters for local persistence
-- Custom adapter hooks for Postgres, MySQL, MongoDB, DynamoDB, or another database
+## Tech Used
+
+- Node.js
+- Express.js
+- CommonJS modules
+- dotenv for environment variables
+- cors for frontend access
+- morgan for request logging
+- nodemon for local development
+- Sequelize ORM for SQL databases
+- Mongoose ODM for MongoDB/NoSQL
+- sqlite3 for local Sequelize SQLite storage
+
+## What This Backend Does
+
+- Creates customer support tickets
+- Lists all tickets
+- Filters tickets by status
+- Gets one ticket by ID
+- Updates existing tickets
+- Deletes tickets
+- Supports mock, SQL, and NoSQL storage modes
 
 ## Folder Structure
 
 ```text
 node-backend/
 ├── src/
-│   ├── app.js                         # Express app setup
-│   ├── server.js                      # HTTP server startup
-│   ├── config/                        # App, database, and domain constants
-│   ├── controllers/                   # HTTP request/response handlers
+│   ├── app.js                       # Express app setup
+│   ├── server.js                    # Starts the HTTP server
+│   ├── config/                      # App, database, and ticket constants
+│   ├── controllers/                 # Request and response logic
+│   ├── services/                    # Business logic
+│   ├── models/                      # Ticket validation and helpers
+│   ├── routes/                      # API route definitions
+│   ├── repositories/                # Mock/database repository selection
 │   ├── database/
-│   │   ├── ticketAdapter.factory.js   # Chooses SQL or NoSQL flow
-│   │   ├── sqlflow/                   # SQL table adapters and mappers
-│   │   └── nosqlflow/                 # NoSQL collection adapters
-│   ├── middlewares/                   # Error and 404 handling
-│   ├── mocks/                         # Mock-mode ticket data only
-│   ├── models/                        # Ticket creation, update, and validation rules
-│   ├── repositories/                  # Storage abstraction implementations
-│   ├── routes/                        # API route definitions
-│   ├── services/                      # Business logic
-│   └── utils/                         # Shared utilities
-├── .env.example
+│   │   ├── sqlflow/                 # SQL-style adapters
+│   │   └── nosqlflow/               # NoSQL-style adapters
+│   ├── mocks/                       # Mock ticket data
+│   ├── middlewares/                 # Error and 404 handling
+│   └── utils/                       # Shared utilities
+├── docs/                            # Extra setup and usage guides
+├── .env.example                     # Example environment config
 └── package.json
 ```
 
-## Getting Started
+## Setup
+
+Install Node.js 18 or newer first.
+
+From the project root:
+
+```powershell
+cd node-backend
+npm install
+Copy-Item .env.example .env
+```
+
+On macOS/Linux:
 
 ```bash
 cd node-backend
 npm install
 cp .env.example .env
+```
+
+## Start The Backend
+
+Development mode:
+
+```bash
 npm run dev
 ```
 
-The API runs on `http://localhost:8080` by default.
+Production-style start:
 
-On Windows PowerShell, use `Copy-Item .env.example .env` instead of `cp .env.example .env`.
+```bash
+npm start
+```
 
-Run `npm run check` to syntax-check the JavaScript files.
+The backend runs on:
 
-## More Guides
+```text
+http://localhost:8080
+```
 
-- `docs/setup-database-modes.md` explains setup, compatibility, and how to switch from mock to SQL or NoSQL database mode.
-- `docs/server-usage-guide.md` explains how to run and use the API in mock, SQL, and NoSQL modes with simple examples.
+Health check:
 
-## Configuration
+```text
+GET http://localhost:8080/health
+```
 
-Use `.env` to switch between mock mode, SQL database mode, and NoSQL database mode.
+## Environment Modes
+
+Edit `.env` to choose how data is stored.
+
+### Mock Mode
+
+Use this when you do not want any database setup.
 
 ```env
 DATA_SOURCE=mock
 ```
 
-Mock mode uses `src/mocks/tickets.mock.js` and resets whenever the server restarts.
+Mock data is stored in:
 
-### NoSQL Flow
+```text
+src/mocks/tickets.mock.js
+```
+
+Mock data resets when the server restarts.
+
+### NoSQL JSON Mode
+
+Use this for quick document-style local storage without MongoDB.
 
 ```env
 DATA_SOURCE=database
 DB_FLOW=nosql
 DB_CLIENT=json-file
-DB_FILE_PATH=./data/tickets.json
+DB_FILE_PATH=./data/tickets-nosql.json
 NOSQL_DATABASE_NAME=ticketing
 NOSQL_TICKETS_COLLECTION=tickets
 ```
 
-This uses `src/database/nosqlflow/noSqlJsonFileTicket.adapter.js` and stores tickets as a document collection.
+This local adapter stores data in a JSON file but follows a NoSQL collection shape.
 
-For MongoDB, DynamoDB, or another NoSQL database, create an adapter in `src/database/nosqlflow/` and use:
+### MongoDB Mode With Mongoose ODM
+
+Use this for real MongoDB integration through Mongoose.
 
 ```env
 DATA_SOURCE=database
 DB_FLOW=nosql
-DB_ADAPTER_PATH=./src/database/nosqlflow/mongoTicket.adapter.js
+DB_CLIENT=mongoose
 NOSQL_CONNECTION_STRING=mongodb://localhost:27017
+NOSQL_DATABASE_NAME=ticketing
+NOSQL_TICKETS_COLLECTION=tickets
 ```
 
-See `src/database/nosqlflow/customNoSqlTicket.adapter.example.js`.
+Mongoose gives schema validation, model methods, and MongoDB document mapping.
 
-### SQL Flow
+### SQL JSON Mode
+
+Use this for quick table-style local storage without a SQL database.
 
 ```env
 DATA_SOURCE=database
@@ -100,21 +159,74 @@ DB_FILE_PATH=./data/tickets-sql.json
 SQL_TICKETS_TABLE=tickets
 ```
 
-This uses `src/database/sqlflow/sqlJsonFileTicket.adapter.js` and stores tickets as table-shaped rows.
+This local adapter stores data in a JSON file but follows a SQL row/table shape.
 
-For Postgres, MySQL, SQL Server, or another SQL database, create an adapter in `src/database/sqlflow/` and use:
+### SQL Mode With Sequelize ORM
+
+Use this for real SQL ORM integration. The default local ORM setup uses SQLite:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=sqlite
+SQLITE_STORAGE=./data/tickets.sqlite
+SQL_TICKETS_TABLE=tickets
+```
+
+For another SQL database, set the dialect and connection string:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=postgres
+SQL_CONNECTION_STRING=postgres://user:password@localhost:5432/ticketing
+SQL_TICKETS_TABLE=tickets
+```
+
+Sequelize gives models, table mapping, validation, and query helpers for SQL databases.
+
+## Connect A Real Database
+
+Built-in real database options:
+
+```text
+SQL:   DB_FLOW=sql   + DB_CLIENT=sequelize
+NoSQL: DB_FLOW=nosql + DB_CLIENT=mongoose
+```
+
+You can also create your own adapter.
+
+For a custom SQL database adapter, create it in:
+
+```text
+src/database/sqlflow/
+```
+
+For a real NoSQL database, create an adapter in:
+
+```text
+src/database/nosqlflow/
+```
+
+Then set:
 
 ```env
 DATA_SOURCE=database
 DB_FLOW=sql
 DB_ADAPTER_PATH=./src/database/sqlflow/postgresTicket.adapter.js
-SQL_CONNECTION_STRING=postgres://user:password@localhost:5432/ticketing
-SQL_TICKETS_TABLE=tickets
 ```
 
-See `src/database/sqlflow/customSqlTicket.adapter.example.js`.
+or:
 
-All adapters implement the same repository contract, so controllers, routes, and services do not change:
+```env
+DATA_SOURCE=database
+DB_FLOW=nosql
+DB_ADAPTER_PATH=./src/database/nosqlflow/mongoTicket.adapter.js
+```
+
+Every adapter must return these methods:
 
 ```js
 findAll(filters)
@@ -124,32 +236,56 @@ update(id, ticket)
 delete(id)
 ```
 
-The adapter module should export `createTicketAdapter(config)`.
+## API Endpoints
 
-## API Reference
+Base URL:
 
-Base path: `/api/tickets`
+```text
+http://localhost:8080/api/tickets
+```
 
-| Method | Path               | Description                        |
-| ------ | ------------------ | ---------------------------------- |
-| GET    | `/api/tickets`     | List tickets, optional `?status=`  |
-| GET    | `/api/tickets/:id` | Get one ticket                     |
-| POST   | `/api/tickets`     | Create a ticket                    |
-| PUT    | `/api/tickets/:id` | Update a ticket                    |
-| DELETE | `/api/tickets/:id` | Delete a ticket                    |
+| Method | Endpoint           | Use |
+| ------ | ------------------ | --- |
+| GET    | `/api/tickets`     | Get all tickets |
+| GET    | `/api/tickets?status=OPEN` | Filter tickets by status |
+| GET    | `/api/tickets/:id` | Get one ticket |
+| POST   | `/api/tickets`     | Create ticket |
+| PUT    | `/api/tickets/:id` | Update ticket |
+| DELETE | `/api/tickets/:id` | Delete ticket |
 
-Example payload:
+Example create/update body:
 
 ```json
 {
-  "title": "Login page returns 500 error",
-  "description": "Customers cannot log in.",
+  "title": "Customer cannot login",
+  "description": "Login fails after password reset.",
   "status": "OPEN",
-  "priority": "URGENT",
+  "priority": "HIGH",
   "assignee": "alice"
 }
 ```
 
-Allowed statuses: `OPEN`, `IN_PROGRESS`, `RESOLVED`, `CLOSED`.
+Allowed statuses:
 
-Allowed priorities: `LOW`, `MEDIUM`, `HIGH`, `URGENT`.
+```text
+OPEN, IN_PROGRESS, RESOLVED, CLOSED
+```
+
+Allowed priorities:
+
+```text
+LOW, MEDIUM, HIGH, URGENT
+```
+
+## Useful Commands
+
+```bash
+npm run dev      # Start with nodemon
+npm start        # Start normally
+npm run check    # Syntax-check JavaScript files
+```
+
+## More Guides
+
+- `docs/setup-database-modes.md`
+- `docs/server-usage-guide.md`

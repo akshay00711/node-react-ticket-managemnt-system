@@ -1,4 +1,5 @@
 const validateAdapter = require("../adapterValidator");
+const SequelizeTicketAdapter = require("./sequelizeTicket.adapter");
 const SqlJsonFileTicketAdapter = require("./sqlJsonFileTicket.adapter");
 
 function createSqlAdapter(config) {
@@ -8,8 +9,14 @@ function createSqlAdapter(config) {
     return adapter;
   }
 
+  if (config.dbClient === "sequelize") {
+    const adapter = new SequelizeTicketAdapter(config);
+    validateAdapter(adapter);
+    return adapter;
+  }
+
   throw new Error(
-    `Unsupported SQL DB_CLIENT "${config.dbClient}". Set DB_ADAPTER_PATH for a custom SQL adapter.`
+    `Unsupported SQL DB_CLIENT "${config.dbClient}". Use "sql-json-file", "sequelize", or set DB_ADAPTER_PATH.`
   );
 }
 

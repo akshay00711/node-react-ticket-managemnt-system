@@ -45,9 +45,9 @@ Data comes from:
 src/mocks/tickets.mock.js
 ```
 
-### NoSQL Mode
+### NoSQL JSON Mode
 
-Use this for document-style storage.
+Use this for document-style local storage without MongoDB.
 
 ```env
 DATA_SOURCE=database
@@ -58,11 +58,22 @@ NOSQL_DATABASE_NAME=ticketing
 NOSQL_TICKETS_COLLECTION=tickets
 ```
 
-Use this flow for MongoDB, DynamoDB, CouchDB, or other document/key-value databases.
+### MongoDB Mode With Mongoose
 
-### SQL Mode
+Use this for MongoDB through Mongoose ODM.
 
-Use this for table-style storage.
+```env
+DATA_SOURCE=database
+DB_FLOW=nosql
+DB_CLIENT=mongoose
+NOSQL_CONNECTION_STRING=mongodb://localhost:27017
+NOSQL_DATABASE_NAME=ticketing
+NOSQL_TICKETS_COLLECTION=tickets
+```
+
+### SQL JSON Mode
+
+Use this for table-style local storage without a SQL database.
 
 ```env
 DATA_SOURCE=database
@@ -72,7 +83,29 @@ DB_FILE_PATH=./data/tickets-sql.json
 SQL_TICKETS_TABLE=tickets
 ```
 
-Use this flow for Postgres, MySQL, SQL Server, SQLite, or other relational databases.
+### SQL Mode With Sequelize
+
+Use this for SQL databases through Sequelize ORM. Local SQLite example:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=sqlite
+SQLITE_STORAGE=./data/tickets.sqlite
+SQL_TICKETS_TABLE=tickets
+```
+
+Postgres example:
+
+```env
+DATA_SOURCE=database
+DB_FLOW=sql
+DB_CLIENT=sequelize
+SQL_DIALECT=postgres
+SQL_CONNECTION_STRING=postgres://user:password@localhost:5432/ticketing
+SQL_TICKETS_TABLE=tickets
+```
 
 Restart the server after changing `.env`.
 
@@ -178,9 +211,11 @@ DELETE /api/tickets/:id
 Only the storage layer changes:
 
 ```text
-mock      -> src/repositories/mockTicket.repository.js
-nosql     -> src/database/nosqlflow/
-sql       -> src/database/sqlflow/
+mock               -> src/repositories/mockTicket.repository.js
+nosql json         -> src/database/nosqlflow/noSqlJsonFileTicket.adapter.js
+nosql mongoose ODM -> src/database/nosqlflow/mongooseTicket.adapter.js
+sql json           -> src/database/sqlflow/sqlJsonFileTicket.adapter.js
+sql Sequelize ORM  -> src/database/sqlflow/sequelizeTicket.adapter.js
 ```
 
 This means frontend code can call the same API no matter which mode the server uses.

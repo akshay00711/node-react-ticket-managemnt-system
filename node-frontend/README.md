@@ -1,64 +1,127 @@
-# React Ticketing Frontend
+# Node Frontend - Customer Ticketing UI
 
-React + Vite client for the Node.js ticketing API in `../node-backend`.
+This folder contains the React frontend for the customer ticketing system. It connects to the Node.js backend in `../node-backend` and lets users create, view, update, filter, and delete tickets.
 
-## Folder Split
+## Tech Used
+
+- React 18
+- Vite
+- JavaScript
+- CSS
+- Fetch API for backend calls
+
+## What This Frontend Does
+
+- Shows all tickets
+- Filters tickets by status
+- Shows correct ticket counts for each status
+- Creates new tickets
+- Edits existing tickets
+- Deletes tickets
+- Views ticket details
+- Shows backend health status
+
+## Folder Structure
 
 ```text
-PR/
-├── node-backend/     # Express MVC API
-└── node-frontend/    # React client for the Node API
+node-frontend/
+├── src/
+│   ├── api/
+│   │   └── ticketApi.js          # All backend API calls
+│   ├── components/
+│   │   ├── ServerStatus.jsx      # Backend status display
+│   │   ├── TicketCard.jsx        # Ticket card UI
+│   │   ├── TicketFilters.jsx     # Status filter tabs
+│   │   └── TicketForm.jsx        # Create/edit form
+│   ├── App.jsx                   # Main app state and API integration
+│   ├── config.js                 # API URL config
+│   ├── constants.js              # Status and priority values
+│   ├── main.jsx                  # React entry point
+│   └── styles.css                # App styling
+├── .env.example                  # Example frontend config
+├── index.html
+├── package.json
+└── vite.config.js
 ```
 
-## Run Locally
+## Setup
 
-Start the backend first:
+Install Node.js 18 or newer first.
+
+From the project root:
 
 ```powershell
-cd ../node-backend
+cd node-frontend
+npm install
+Copy-Item .env.example .env
+```
+
+On macOS/Linux:
+
+```bash
+cd node-frontend
+npm install
+cp .env.example .env
+```
+
+## Start The Frontend
+
+Before starting the frontend, start the backend in another terminal:
+
+```powershell
+cd node-backend
 npm install
 Copy-Item .env.example .env
 npm run dev
 ```
 
-Then start this frontend in another terminal:
+Then start the frontend:
 
 ```powershell
-cd ../node-frontend
-npm install
-Copy-Item .env.example .env
+cd node-frontend
 npm run dev
 ```
 
-Open:
+The frontend runs on:
 
 ```text
 http://localhost:5174
 ```
 
-## API Integration
+## Backend Connection
 
-The frontend calls these backend endpoints:
+By default, the frontend calls:
 
-```text
-GET    /health
-GET    /api/tickets
-GET    /api/tickets?status=OPEN
-GET    /api/tickets/:id
-POST   /api/tickets
-PUT    /api/tickets/:id
-DELETE /api/tickets/:id
+```env
+VITE_API_BASE_URL=/api
+VITE_HEALTH_URL=/health
 ```
 
-During development, `vite.config.js` proxies `/api` and `/health` to:
+During local development, `vite.config.js` proxies these requests to the backend:
 
 ```text
 http://localhost:8080
 ```
 
-## Configure API URL
+This means the browser can call `/api/tickets`, and Vite sends it to `http://localhost:8080/api/tickets`.
 
-Default `.env`:
+## API Calls Used By Frontend
+
+The frontend integrates these backend APIs:
+
+| Method | Endpoint | Use |
+| ------ | -------- | --- |
+| GET | `/health` | Check backend status |
+| GET | `/api/tickets` | Load all tickets |
+| GET | `/api/tickets?status=OPEN` | Filter tickets |
+| GET | `/api/tickets/:id` | View one ticket |
+| POST | `/api/tickets` | Create ticket |
+| PUT | `/api/tickets/:id` | Update ticket |
+| DELETE | `/api/tickets/:id` | Delete ticket |
+
+## Change Backend URL
+
+For local development, keep:
 
 ```env
 VITE_API_BASE_URL=/api
@@ -72,14 +135,34 @@ VITE_API_BASE_URL=https://your-api.example.com/api
 VITE_HEALTH_URL=https://your-api.example.com/health
 ```
 
-## Backend Modes
+Restart the frontend after changing `.env`.
 
-The frontend does not change when the backend changes mode. It works with:
+## Backend Modes Supported
+
+The frontend works with all backend modes:
 
 ```text
-DATA_SOURCE=mock
-DATA_SOURCE=database + DB_FLOW=sql
-DATA_SOURCE=database + DB_FLOW=nosql
+Mock mode:          DATA_SOURCE=mock
+SQL JSON mode:      DATA_SOURCE=database + DB_FLOW=sql + DB_CLIENT=sql-json-file
+SQL ORM mode:       DATA_SOURCE=database + DB_FLOW=sql + DB_CLIENT=sequelize
+NoSQL JSON mode:    DATA_SOURCE=database + DB_FLOW=nosql + DB_CLIENT=json-file
+MongoDB ODM mode:   DATA_SOURCE=database + DB_FLOW=nosql + DB_CLIENT=mongoose
 ```
 
-Only the backend `.env` changes.
+No frontend code changes are needed when switching backend modes.
+
+## Useful Commands
+
+```bash
+npm run dev      # Start local frontend server
+npm run build    # Build production files
+npm run preview  # Preview production build locally
+```
+
+## Normal Local URLs
+
+```text
+Backend:  http://localhost:8080
+Frontend: http://localhost:5174
+```
+ 
